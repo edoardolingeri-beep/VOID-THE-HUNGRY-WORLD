@@ -29,6 +29,7 @@ export class App {
   private params = new URLSearchParams(location.search);
   /** Simulation speed multiplier (testing). */
   private simSpeed = 1;
+  private screenShownAt = 0;
 
   constructor(canvas: HTMLCanvasElement, ui: HTMLElement) {
     this.engine = new Engine(canvas);
@@ -86,7 +87,9 @@ export class App {
   // ------------------------------------------------------------ loop
   private frame(dt: number) {
     const s = this.session;
-    if (s) {
+    // nothing to draw behind fully opaque screens
+    const covered = (this.state === 'select' || this.state === 'collection' || this.state === 'settings') && !!this.screenEl?.classList.contains('show') && performance.now() - this.screenShownAt > 500;
+    if (s && !covered) {
       const steps = this.simSpeed > 1 ? Math.round(this.simSpeed) : 1;
       for (let i = 0; i < steps; i++) s.update(dt);
       if (this.hud && (this.state === 'playing' || this.state === 'transition')) this.hud.update(dt);
@@ -109,6 +112,7 @@ export class App {
       window.setTimeout(() => old.remove(), 380);
     }
     this.screenEl = el;
+    this.screenShownAt = performance.now();
     if (el) {
       this.screenLayer.append(el);
       requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('show')));

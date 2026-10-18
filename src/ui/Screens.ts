@@ -127,7 +127,7 @@ export function collection(cb: { back(): void }) {
   const grid = h('div', { class: 'grid' });
   defs.forEach((d, i) => {
     const n = col[d.id] ?? 0;
-    const img = h('img', { alt: d.name, loading: 'lazy' }) as HTMLImageElement;
+    const img = h('img', { alt: '', style: { opacity: '0', transition: 'opacity .3s' } }) as HTMLImageElement;
     const special = d.tags.includes('special') || d.tags.includes('landmark');
     const item = h(
       'div',
@@ -137,7 +137,10 @@ export function collection(cb: { back(): void }) {
       h('div', { class: 'c' }, n ? `×${formatNumber(n)} · ${d.points} pts` : `${d.points} pts`),
     );
     grid.append(item);
-    icons.request(d.id, 0, (url) => (img.src = url));
+    icons.request(d.id, 0, (url) => {
+      img.src = url;
+      img.style.opacity = '1';
+    });
   });
   const secrets = h('div', { class: 'stats' }, ...LEVELS.map((l) => h('div', { class: `chip glass`, style: { opacity: saves.data.secrets[l.id] ? '1' : '.45' } }, icon(saves.data.secrets[l.id] ? 'star' : 'lock'), `World ${l.id}`)));
   const secretCount = Object.values(saves.data.secrets).filter(Boolean).length;
