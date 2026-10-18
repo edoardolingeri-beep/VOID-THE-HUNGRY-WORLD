@@ -28,14 +28,17 @@ export interface SaveData {
   settings: Settings;
   totalEaten: number;
   seenTutorial: boolean;
+  settingsRev?: number;
 }
 
 const KEY = 'void-hungry-world-save-v1';
+/** Bumped when default settings change so old saves pick up the new defaults. */
+const SETTINGS_REV = 2;
 
 function defaultQuality(): Quality {
   const touch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
   const small = Math.min(window.innerWidth, window.innerHeight) < 600;
-  return touch && small ? 'low' : touch ? 'medium' : 'high';
+  return touch && small ? 'medium' : touch ? 'medium' : 'high';
 }
 
 function defaults(): SaveData {
@@ -63,6 +66,8 @@ export class SaveManager {
       if (raw) {
         const parsed = JSON.parse(raw) as Partial<SaveData>;
         const d = defaults();
+        // older saves defaulted phones to "low"; move them to the sharper preset once
+        if ((parsed as { settingsRev?: number }).settingsRev !== SETTINGS_REV && parsed.settings?.quality === 'low') parsed.settings.quality = d.settings.quality;
         this.data = {
           ...d,
           ...parsed,
@@ -80,6 +85,7 @@ export class SaveManager {
   save() {
     if (!this.storageOk) return;
     try {
+      this.data.settingsRev = SETTINGS_REV;
       localStorage.setItem(KEY, JSON.stringify(this.data));
     } catch {
       this.storageOk = false;

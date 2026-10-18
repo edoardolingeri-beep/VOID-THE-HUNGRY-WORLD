@@ -41,6 +41,23 @@ export interface LaneDef {
 
 export type Weighted = string | [string, number][] | string[];
 
+/** A painter that forwards every drawing call to two painters. */
+function fanout(a: GroundPainter, b: GroundPainter): GroundPainter {
+  const proxy: GroundPainter = new Proxy(a, {
+    get(target, prop, recv) {
+      const v = Reflect.get(target, prop, recv);
+      if (typeof v !== 'function') return v;
+      return (...args: unknown[]) => {
+        const r = (v as (...x: unknown[]) => unknown).apply(a, args);
+        const w = (b as unknown as Record<string | symbol, (...x: unknown[]) => unknown>)[prop];
+        w.apply(b, args);
+        return r === a ? proxy : r;
+      };
+    },
+  });
+  return proxy;
+}
+
 function pickWeighted(rng: RNG, w: Weighted): string {
   if (typeof w === 'string') return w;
   if (typeof w[0] === 'string') return rng.pick(w as string[]);
@@ -62,7 +79,13 @@ function pickWeighted(rng: RNG, w: Weighted): string {
  */
 export class LevelContext {
   readonly rng: RNG;
+  /** Paints into every ground layer at once (sharp play area + coarse surroundings). */
   readonly painter: GroundPainter;
+  /** High-resolution layer covering the play area plus a small border. */
+  readonly inner: GroundPainter;
+  /** Low-resolution layer covering everything out to the scenery margin. */
+  readonly outer: GroundPainter;
+  readonly innerExt: { minX: number; maxX: number; minZ: number; maxZ: number };
   readonly placements: Placement[] = [];
   readonly lanes: LaneDef[] = [];
   readonly bounds: { minX: number; maxX: number; minZ: number; maxZ: number };
@@ -78,12 +101,21 @@ export class LevelContext {
   readonly extras: THREE.Object3D[] = [];
   readonly night: boolean;
 
-  constructor(w: number, h: number, margin: number, seed: number, maxRes: number, night = false) {
+  constructor(w: number, h: number, margin: number, seed: number, maxRes: number, night = false, outerRes = 0) {
     this.rng = new RNG(seed);
     this.night = night;
     this.bounds = { minX: -w / 2, maxX: w / 2, minZ: -h / 2, maxZ: h / 2 };
     this.ext = { minX: -w / 2 - margin, maxX: w / 2 + margin, minZ: -h / 2 - margin, maxZ: h / 2 + margin };
-    this.painter = new GroundPainter(this.ext.minX, this.ext.minZ, this.ext.maxX, this.ext.maxZ, maxRes, seed);
+    const pad = Math.min(margin, 8);
+    this.innerExt = { minX: -w / 2 - pad, maxX: w / 2 + pad, minZ: -h / 2 - pad, maxZ: h / 2 + pad };
+    if (outerRes > 0) {
+      const ie = this.innerExt;
+      this.inner = new GroundPainter(ie.minX, ie.minZ, ie.maxX, ie.maxZ, maxRes, seed);
+      this.outer = new GroundPainter(this.ext.minX, this.ext.minZ, this.ext.maxX, this.ext.maxZ, outerRes, seed);
+      this.painter = fanout(this.inner, this.outer);
+    } else {
+      this.inner = this.outer = this.painter = new GroundPainter(this.ext.minX, this.ext.minZ, this.ext.maxX, this.ext.maxZ, maxRes, seed);
+    }
   }
 
   // ---------------------------------------------------------------- props

@@ -6,42 +6,42 @@ export const THEMES = {
   sunnyPark: {
     sky: '#bfe6ff', fog: '#d4ecff', sunColor: '#fff3dc', sunIntensity: 2.7, sunDir: [0.45, 1, 0.55],
     hemiSky: '#dff1ff', hemiGround: '#7c9a5c', hemiIntensity: 1.25, exposure: 1.0,
-    bloom: { strength: 0.28, radius: 0.45, threshold: 0.99 }, holeTint: '#8a5cff', music: 'park', accent: '#7ee07a', accent2: '#3de8ff',
+    bloom: { strength: 0.14, radius: 0.3, threshold: 1.0 }, holeTint: '#8a5cff', music: 'park', accent: '#7ee07a', accent2: '#3de8ff',
   },
   street: {
     sky: '#c8e4ff', fog: '#dbe9f5', sunColor: '#fff0d6', sunIntensity: 2.6, sunDir: [-0.5, 1, 0.45],
     hemiSky: '#e3f0ff', hemiGround: '#8a8478', hemiIntensity: 1.2, exposure: 1.0,
-    bloom: { strength: 0.28, radius: 0.45, threshold: 0.99 }, holeTint: '#7b5cff', music: 'street', accent: '#ffb347', accent2: '#ff5a5f',
+    bloom: { strength: 0.14, radius: 0.3, threshold: 1.0 }, holeTint: '#7b5cff', music: 'street', accent: '#ffb347', accent2: '#ff5a5f',
   },
   park: {
     sky: '#b9e2ff', fog: '#cfe9f7', sunColor: '#fff1d2', sunIntensity: 2.7, sunDir: [0.6, 1, 0.3],
     hemiSky: '#e0f2ff', hemiGround: '#6f9a55', hemiIntensity: 1.2, exposure: 1.0,
-    bloom: { strength: 0.28, radius: 0.45, threshold: 0.99 }, holeTint: '#9b5cff', music: 'park', accent: '#4cd07d', accent2: '#ffd23f',
+    bloom: { strength: 0.14, radius: 0.3, threshold: 1.0 }, holeTint: '#9b5cff', music: 'park', accent: '#4cd07d', accent2: '#ffd23f',
   },
   traffic: {
     sky: '#cfe0f2', fog: '#d9e2ec', sunColor: '#ffeccc', sunIntensity: 2.5, sunDir: [0.4, 1, -0.5],
     hemiSky: '#e6eefc', hemiGround: '#7d7a72', hemiIntensity: 1.2, exposure: 1.0,
-    bloom: { strength: 0.38, radius: 0.45, threshold: 0.95 }, holeTint: '#5c7bff', music: 'traffic', accent: '#ff8a2a', accent2: '#ffd23f',
+    bloom: { strength: 0.18, radius: 0.3, threshold: 1.0 }, holeTint: '#5c7bff', music: 'traffic', accent: '#ff8a2a', accent2: '#ffd23f',
   },
   shopping: {
     sky: '#ffe1c7', fog: '#ffe6d2', sunColor: '#ffe2bd', sunIntensity: 2.6, sunDir: [0.7, 0.9, 0.4],
     hemiSky: '#fff0e0', hemiGround: '#9a7f78', hemiIntensity: 1.2, exposure: 1.0,
-    bloom: { strength: 0.42, radius: 0.5, threshold: 0.95 }, holeTint: '#c85cff', music: 'shopping', accent: '#ff7eb6', accent2: '#ffc94a',
+    bloom: { strength: 0.2, radius: 0.32, threshold: 1.0 }, holeTint: '#c85cff', music: 'shopping', accent: '#ff7eb6', accent2: '#ffc94a',
   },
   downtown: {
     sky: '#b8d4f0', fog: '#c9d8e8', sunColor: '#fff0dc', sunIntensity: 2.6, sunDir: [-0.4, 1, 0.6],
     hemiSky: '#dce9ff', hemiGround: '#6f7480', hemiIntensity: 1.25, exposure: 1.0,
-    bloom: { strength: 0.4, radius: 0.5, threshold: 0.95 }, holeTint: '#6c5cff', music: 'downtown', accent: '#3de8ff', accent2: '#7b5cff',
+    bloom: { strength: 0.2, radius: 0.32, threshold: 1.0 }, holeTint: '#6c5cff', music: 'downtown', accent: '#3de8ff', accent2: '#7b5cff',
   },
   industrial: {
     sky: '#d8d2c8', fog: '#d6cfc4', sunColor: '#ffd9a8', sunIntensity: 2.5, sunDir: [0.7, 0.85, 0.35],
     hemiSky: '#e8e2d8', hemiGround: '#5d6470', hemiIntensity: 1.15, exposure: 1.0,
-    bloom: { strength: 0.4, radius: 0.5, threshold: 0.95 }, holeTint: '#ff8a2a', music: 'industrial', accent: '#ff8a2a', accent2: '#ffd23f',
+    bloom: { strength: 0.2, radius: 0.32, threshold: 1.0 }, holeTint: '#ff8a2a', music: 'industrial', accent: '#ff8a2a', accent2: '#ffd23f',
   },
   beach: {
     sky: '#a8e4ff', fog: '#c6efff', sunColor: '#fff6e2', sunIntensity: 3.0, sunDir: [0.3, 1, 0.6],
     hemiSky: '#e6f8ff', hemiGround: '#d8c08a', hemiIntensity: 1.3, exposure: 1.02,
-    bloom: { strength: 0.28, radius: 0.45, threshold: 0.99 }, holeTint: '#5c6bff', music: 'beach', accent: '#22c3b5', accent2: '#ffd23f',
+    bloom: { strength: 0.14, radius: 0.3, threshold: 1.0 }, holeTint: '#5c6bff', music: 'beach', accent: '#22c3b5', accent2: '#ffd23f',
   },
   neon: {
     sky: '#0a0720', fog: '#170c38', sunColor: '#a3adff', sunIntensity: 1.3, sunDir: [-0.4, 1, 0.5],
@@ -52,7 +52,7 @@ export const THEMES = {
   finale: {
     sky: '#ffc8a0', fog: '#f7c8a8', sunColor: '#ffcf96', sunIntensity: 2.9, sunDir: [0.8, 0.75, 0.45],
     hemiSky: '#ffe0c8', hemiGround: '#6a5a78', hemiIntensity: 1.15, exposure: 1.0,
-    bloom: { strength: 0.48, radius: 0.55, threshold: 0.84 }, holeTint: '#ff3d9a', music: 'finale', accent: '#ffc94a', accent2: '#ff3d9a',
+    bloom: { strength: 0.26, radius: 0.35, threshold: 0.96 }, holeTint: '#ff3d9a', music: 'finale', accent: '#ffc94a', accent2: '#ff3d9a',
   },
 } satisfies Record<string, Theme>;
 

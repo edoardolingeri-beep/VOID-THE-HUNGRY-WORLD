@@ -62,12 +62,16 @@ varying vec2 vP;
 void main() {
   float rr = length(vP);
   float a = atan(vP.y, vP.x);
-  float edge = smoothstep(1.0 + uEdge, 1.0, rr) * smoothstep(0.992, 1.0, rr);
-  float g = clamp(1.0 - (rr - 1.0) / uGlowW, 0.0, 1.0);
-  float glow = pow(g, 2.6) * (0.30 + uPulse * 0.6);
-  float dash = smoothstep(0.55, 1.0, sin(a * 28.0 - uTime * 2.4)) * smoothstep(1.0 + uEdge * 4.0, 1.0 + uEdge, rr) * smoothstep(1.0, 1.0 + uEdge, rr) * 0.45;
-  vec3 hot = mix(uHoleTint, vec3(1.0), 0.6);
-  vec3 col = hot * edge * (1.25 + uPulse * 1.5) + uHoleTint * (glow + dash);
+  // crisp, anti-aliased rim line at least ~1.5px wide
+  float px = max(fwidth(rr), 1e-5);
+  float lineW = max(uEdge, px * 1.6);
+  float d = rr - 1.0;
+  float edge = (1.0 - smoothstep(lineW - px, lineW + px, d)) * smoothstep(-px, 0.0, d);
+  float g = clamp(1.0 - d / uGlowW, 0.0, 1.0);
+  float glow = g * g * g * (0.16 + uPulse * 0.55);
+  float dash = smoothstep(0.55, 1.0, sin(a * 28.0 - uTime * 2.4)) * (1.0 - smoothstep(lineW * 3.0, lineW * 4.5, d)) * step(lineW, d) * 0.3;
+  vec3 hot = mix(uHoleTint, vec3(1.0), 0.55);
+  vec3 col = hot * edge * (0.9 + uPulse * 1.2) + uHoleTint * (glow + dash);
   float alpha = clamp(edge + glow + dash, 0.0, 1.0);
   gl_FragColor = vec4(col, alpha);
   #include <tonemapping_fragment>
@@ -182,8 +186,8 @@ export class HoleVisual {
     this.ring.position.set(x, 0.01, z);
     this.ring.scale.set(r, r, r);
     // keep the bright edge a constant-ish width in world units
-    this.ringMat.uniforms.uEdge.value = Math.min(0.08, 0.035 / r + 0.012);
-    this.ringMat.uniforms.uGlowW.value = Math.min(0.42, 0.12 / r + 0.16);
+    this.ringMat.uniforms.uEdge.value = Math.min(0.05, 0.02 / r + 0.008);
+    this.ringMat.uniforms.uGlowW.value = Math.min(0.3, 0.08 / r + 0.1);
     for (let i = 0; i < this.shock.length; i++) {
       if (this.shockT[i] < 0) continue;
       this.shockT[i] += dt;

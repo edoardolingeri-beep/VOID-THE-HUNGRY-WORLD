@@ -13,6 +13,8 @@ export class GroundPainter {
   readonly ctx: CanvasRenderingContext2D;
   readonly s: number;
   readonly rng: RNG;
+  /** Separate stream for fine speckles so large features match across resolutions. */
+  private speckRng: RNG;
 
   constructor(
     readonly minX: number,
@@ -29,6 +31,7 @@ export class GroundPainter {
     this.canvas.height = Math.max(4, Math.round(h * this.s));
     this.ctx = this.canvas.getContext('2d')!;
     this.rng = new RNG(seed);
+    this.speckRng = new RNG(seed * 7 + 3);
   }
 
   get width() {
@@ -170,7 +173,7 @@ export class GroundPainter {
     const area = (x1 - x0) * (z1 - z0);
     const n = Math.min(60000, Math.floor(area * density * 10 * Math.min(1, (this.s / 18) ** 2)));
     const c = this.ctx;
-    const r = this.rng;
+    const r = this.speckRng;
     const sz = Math.max(1, size * this.s);
     for (let i = 0; i < n; i++) {
       c.fillStyle = colors[i % colors.length];

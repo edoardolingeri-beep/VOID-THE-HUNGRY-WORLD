@@ -4,6 +4,7 @@ import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
 export type Quality = 'low' | 'medium' | 'high';
 
@@ -85,6 +86,17 @@ export class Engine {
     this.resize();
   }
 
+  private env: THREE.Texture | null = null;
+  /** Soft studio-like image based lighting shared by every scene. */
+  get envMap(): THREE.Texture {
+    if (!this.env) {
+      const pmrem = new THREE.PMREMGenerator(this.renderer);
+      this.env = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+      pmrem.dispose();
+    }
+    return this.env;
+  }
+
   get maxAnisotropy() {
     return this.renderer.capabilities.getMaxAnisotropy();
   }
@@ -92,7 +104,8 @@ export class Engine {
   setQuality(q: Quality) {
     this.quality = q;
     const dpr = window.devicePixelRatio || 1;
-    const pr = q === 'low' ? Math.min(dpr, 1) : q === 'medium' ? Math.min(dpr, 1.5) : Math.min(dpr, 2);
+    // sharp output on retina screens: never render below ~1.25x on phones
+    const pr = q === 'low' ? Math.min(dpr, 1.25) : q === 'medium' ? Math.min(dpr, 2) : Math.min(dpr, 2.5);
     this.renderer.setPixelRatio(pr);
     this.renderer.shadowMap.type = THREE.PCFShadowMap;
     this.renderer.shadowMap.needsUpdate = true;
@@ -106,7 +119,7 @@ export class Engine {
       const size = this.renderer.getDrawingBufferSize(new THREE.Vector2());
       const rt = new THREE.WebGLRenderTarget(size.x, size.y, {
         type: THREE.HalfFloatType,
-        samples: q === 'high' ? 4 : 2,
+        samples: 4,
       });
       this.composer = new EffectComposer(this.renderer, rt);
       this.renderPass = new RenderPass(new THREE.Scene(), new THREE.PerspectiveCamera());
@@ -123,7 +136,7 @@ export class Engine {
 
   /** Shadow map resolution appropriate for the current quality. */
   get shadowSize() {
-    return this.quality === 'low' ? 1024 : this.quality === 'medium' ? 2048 : 2048;
+    return this.quality === 'low' ? 1024 : this.quality === 'medium' ? 2048 : 4096;
   }
 
   setBloom(s: Partial<BloomSettings>) {

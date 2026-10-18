@@ -239,8 +239,9 @@ defineProps([
     variants: 1,
     blurb: 'The birds will have to manage.',
     build(b) {
-      b.lathe([[0, 0], [0.3, 0], [0.28, 0.08], [0.1, 0.15], [0.08, 0.8], [0.45, 0.95], [0.5, 1.0], [0, 1.0]], '#d8d2c4', 0, 0, 0, 12);
-      b.cylB(0.42, 0.42, 0.02, '#6fd0f0', 0, 0.98, 0, 14);
+      // hollow bowl so the water sits clearly below the rim (no coplanar faces)
+      b.lathe([[0, 0], [0.3, 0], [0.28, 0.08], [0.1, 0.15], [0.08, 0.8], [0.45, 0.94], [0.5, 1.02], [0.44, 1.02], [0.4, 0.96], [0, 0.93]], '#d8d2c4', 0, 0, 0, 14);
+      b.cylB(0.405, 0.38, 0.03, '#7fd4ee', 0, 0.94, 0, 16);
     },
   },
   {
@@ -253,17 +254,25 @@ defineProps([
     heightFactor: 0.2,
     blurb: 'Make a wish. The wish was hunger.',
     build(b) {
-      b.cylB(3.0, 3.1, 0.55, '#d8d2c4', 0, 0, 0, 20);
-      b.cylB(2.75, 2.75, 0.05, '#3fb8e8', 0, 0.5, 0, 20);
-      b.cylB(0.6, 0.8, 1.4, '#cfc8b8', 0, 0.5, 0, 12);
-      b.lathe([[0, 1.8], [1.4, 1.75], [1.5, 1.95], [0, 1.9]], '#d8d2c4', 0, 0, 0, 16);
-      b.cylB(1.35, 1.35, 0.04, '#5fd0f5', 0, 1.88, 0, 16);
-      b.cylB(0.25, 0.35, 0.9, '#cfc8b8', 0, 1.9, 0, 10);
-      b.lathe([[0, 2.75], [0.65, 2.7], [0.7, 2.85], [0, 2.85]], '#d8d2c4', 0, 0, 0, 12);
-      b.cone(0.18, 0.9, '#bfeeff', 0, 3.3, 0, 8, { emissive: true, glow: 1.15 });
+      const stone = '#ddd6c6', stone2 = '#cfc7b5', water = '#69c8ec', foam = '#e4f7ff';
+      // lower basin: hollow dish (rim at 0.6, floor at 0.2) with water well below the rim
+      b.lathe([[0, 0], [3.1, 0], [3.15, 0.5], [3.05, 0.62], [2.82, 0.62], [2.78, 0.22], [0, 0.22]], stone, 0, 0, 0, 24);
+      b.cylB(2.76, 2.76, 0.2, water, 0, 0.24, 0, 24);
+      // central column
+      b.cylB(0.55, 0.75, 1.45, stone2, 0, 0.22, 0, 14);
+      // middle bowl
+      b.lathe([[0.4, 1.62], [1.35, 1.72], [1.48, 1.98], [1.36, 1.98], [1.28, 1.8], [0.4, 1.8]], stone, 0, 0, 0, 20);
+      b.cylB(1.27, 1.27, 0.1, water, 0, 1.8, 0, 20);
+      b.cylB(0.22, 0.32, 0.85, stone2, 0, 1.8, 0, 12);
+      // top bowl
+      b.lathe([[0.2, 2.6], [0.66, 2.66], [0.72, 2.84], [0.62, 2.84], [0.58, 2.72], [0.2, 2.72]], stone, 0, 0, 0, 16);
+      b.cylB(0.57, 0.57, 0.08, water, 0, 2.72, 0, 16);
+      // water jets and falling curtains (opaque, so nothing flickers under bloom)
+      b.cone(0.13, 0.75, foam, 0, 3.15, 0, 10);
+      b.cylB(0.6, 0.68, 0.86, water, 0, 1.84, 0, 18);
       for (let i = 0; i < 8; i++) {
         const a = (i / 8) * Math.PI * 2;
-        b.cone(0.07, 0.6, '#bfeeff', Math.cos(a) * 1.2, 2.2, Math.sin(a) * 1.2, 6, { emissive: true, glow: 1.1, rz: Math.cos(a) * 0.5, rx: -Math.sin(a) * 0.5 });
+        b.cone(0.06, 0.55, foam, Math.cos(a) * 1.9, 0.7, Math.sin(a) * 1.9, 8, { rz: Math.cos(a) * 0.45, rx: -Math.sin(a) * 0.45 });
       }
     },
   },

@@ -24,6 +24,8 @@ export class WorldObject {
   /** Blocked wobble. */
   wobble = 0;
   wobbleDir = 0;
+  wobbleAmp = 0.08;
+  castsShadow = true;
   /** Idle animation phase. */
   phase = Math.random() * Math.PI * 2;
   /** Lane movement. */
@@ -70,7 +72,7 @@ export class WorldObject {
     const m = this.mesh;
     m.position.set(this.x, this.y + this.baseY, this.z);
     qYaw.setFromAxisAngle(UP, this.rot);
-    const t = this.state === 'falling' ? this.tilt : this.wobble * 0.08;
+    const t = this.state === 'falling' ? this.tilt : this.wobble * this.wobbleAmp;
     const dir = this.state === 'falling' ? this.tiltDir : this.wobbleDir;
     if (t !== 0) {
       // tilt around a horizontal axis perpendicular to the direction of the hole

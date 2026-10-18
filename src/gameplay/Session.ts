@@ -133,36 +133,53 @@ export class Session {
     this.radius = TIER_RADII[def.startTier];
 
     // ---------- level construction
-    const texRes = engine.quality === 'high' ? 4096 : 2048;
-    this.ctx = new LevelContext(def.w, def.h, def.margin, def.seed, texRes, !!th.night);
+    const texRes = engine.quality === 'low' ? 2048 : engine.quality === 'medium' ? 3072 : 4096;
+    this.ctx = new LevelContext(def.w, def.h, def.margin, def.seed, texRes, !!th.night, engine.quality === 'low' ? 1024 : 2048);
     def.build(this.ctx);
 
     const s = this.scene;
     s.background = new THREE.Color(th.sky);
     s.fog = new THREE.Fog(th.fog, 30, 120);
-    this.hemi = new THREE.HemisphereLight(th.hemiSky, th.hemiGround, th.hemiIntensity);
+    this.hemi = new THREE.HemisphereLight(th.hemiSky, th.hemiGround, th.hemiIntensity * 0.85);
+    s.environment = engine.envMap;
+    s.environmentIntensity = th.night ? 0.12 : 0.16;
     s.add(this.hemi);
     this.sun = new THREE.DirectionalLight(th.sunColor, th.sunIntensity);
     this.sun.castShadow = true;
     const ss = engine.shadowSize;
     this.sun.shadow.mapSize.set(ss, ss);
-    this.sun.shadow.bias = -0.0004;
-    this.sun.shadow.normalBias = 0.03;
-    this.sun.shadow.radius = 3;
+    this.sun.shadow.bias = -0.00025;
+    this.sun.shadow.normalBias = 0.025;
+    this.sun.shadow.radius = 2;
     s.add(this.sun, this.sun.target);
 
-    // ground
+    // ground: sharp play area + coarse surroundings, both cut by the hole
     const e = this.ctx.ext;
-    const gw = e.maxX - e.minX, gh = e.maxZ - e.minZ;
-    const tex = this.ctx.painter.texture(Math.min(8, engine.maxAnisotropy));
-    const gmat = createGroundMaterial(tex, new THREE.Vector2(gw, gh));
-    const ggeo = new THREE.PlaneGeometry(gw, gh, 1, 1);
-    ggeo.rotateX(-Math.PI / 2);
-    this.ground = new THREE.Mesh(ggeo, gmat);
-    this.ground.position.set((e.minX + e.maxX) / 2, 0, (e.minZ + e.maxZ) / 2);
+    const ie = this.ctx.innerExt;
+    const aniso = Math.min(16, engine.maxAnisotropy);
+    const innerTex = this.ctx.inner.texture(aniso);
+    const iw = ie.maxX - ie.minX, ih = ie.maxZ - ie.minZ;
+    const imat = createGroundMaterial(innerTex, new THREE.Vector2(ie.minX, ie.minZ), new THREE.Vector2(iw, ih));
+    const igeo = new THREE.PlaneGeometry(iw, ih, 1, 1);
+    igeo.rotateX(-Math.PI / 2);
+    this.ground = new THREE.Mesh(igeo, imat);
+    this.ground.position.set((ie.minX + ie.maxX) / 2, 0, (ie.minZ + ie.maxZ) / 2);
     this.ground.receiveShadow = true;
     s.add(this.ground);
-    this.disposables.push(tex, gmat, ggeo);
+    this.disposables.push(innerTex, imat, igeo);
+    if (this.ctx.outer !== this.ctx.inner) {
+      const outerTex = this.ctx.outer.texture(aniso);
+      const omat = createGroundMaterial(outerTex, new THREE.Vector2(e.minX, e.minZ), new THREE.Vector2(e.maxX - e.minX, e.maxZ - e.minZ));
+      // shape in (x, -z) so that rotating by -90° about X lays it flat facing up
+      const ring = new THREE.Shape([new THREE.Vector2(e.minX, -e.minZ), new THREE.Vector2(e.maxX, -e.minZ), new THREE.Vector2(e.maxX, -e.maxZ), new THREE.Vector2(e.minX, -e.maxZ)]);
+      ring.holes.push(new THREE.Path([new THREE.Vector2(ie.minX, -ie.minZ), new THREE.Vector2(ie.minX, -ie.maxZ), new THREE.Vector2(ie.maxX, -ie.maxZ), new THREE.Vector2(ie.maxX, -ie.minZ)]));
+      const ogeo = new THREE.ShapeGeometry(ring);
+      ogeo.rotateX(-Math.PI / 2);
+      const outer = new THREE.Mesh(ogeo, omat);
+      outer.receiveShadow = true;
+      s.add(outer);
+      this.disposables.push(outerTex, omat, ogeo);
+    }
     // far ground (beyond the painted area) in the outer colour, with a cut-out
     const farShape = new THREE.Shape([new THREE.Vector2(-3000, -3000), new THREE.Vector2(3000, -3000), new THREE.Vector2(3000, 3000), new THREE.Vector2(-3000, 3000)]);
     farShape.holes.push(new THREE.Path([new THREE.Vector2(e.minX, e.minZ), new THREE.Vector2(e.minX, e.maxZ), new THREE.Vector2(e.maxX, e.maxZ), new THREE.Vector2(e.maxX, e.minZ)]));
@@ -233,7 +250,7 @@ export class Session {
   }
 
   private outerColor() {
-    const c = this.ctx.painter.ctx.getImageData(1, 1, 1, 1).data;
+    const c = this.ctx.outer.ctx.getImageData(1, 1, 1, 1).data;
     return new THREE.Color(`rgb(${c[0]},${c[1]},${c[2]})`);
   }
 
@@ -269,6 +286,7 @@ export class Session {
     mesh.castShadow = !asset.def.noShadow && (this.engine.quality !== 'low' || asset.height > 1.2);
     mesh.receiveShadow = this.engine.quality !== 'low' || asset.size > 1;
     const o = new WorldObject(++this.uid, asset, mesh, x, z, rot);
+    o.castsShadow = mesh.castShadow;
     this.objects.push(o);
     this.scene.add(mesh);
     return o;
@@ -484,7 +502,9 @@ export class Session {
   private updateShadow() {
     const f = this.rig.focus;
     const d = this.rig.distance;
-    const size = d * 0.95 + 6;
+    // quantise the shadow frustum so zooming does not make shadows crawl
+    const raw = d * 0.95 + 6;
+    const size = Math.pow(1.18, Math.ceil(Math.log(raw) / Math.log(1.18)));
     const cam = this.sun.shadow.camera;
     // snap to texel grid to avoid shimmering
     const texel = (size * 2) / this.sun.shadow.mapSize.x;
@@ -566,6 +586,8 @@ export class Session {
         if (vn < -1.5 && this.mode === 'play') audio.bump();
       }
       o.wobble = Math.min(1, o.wobble + 0.25);
+      // large things barely budge: only objects close to edible size teeter
+      o.wobbleAmp = a.size > r * 1.8 ? 0 : 0.07 * Math.min(1, 1.8 - a.size / r);
       o.wobbleDir = Math.atan2(this.hz - o.z, this.hx - o.x);
       o.sync();
       if (o.hintCooldown <= this.time && this.mode === 'play') {
@@ -596,12 +618,17 @@ export class Session {
     this.lodT -= dt;
     const lod = this.lodT <= 0;
     if (lod) this.lodT = 0.3;
-    const minVis = camD * (this.engine.quality === 'low' ? 0.009 : 0.006);
+    const minVis = camD * (this.engine.quality === 'low' ? 0.013 : this.engine.quality === 'medium' ? 0.009 : 0.006);
+    const minShadow = camD * (this.engine.quality === 'high' ? 0.012 : 0.022);
     for (const o of this.objects) {
       if (o.state === 'gone') continue;
       if (lod && o.state === 'idle') {
-        const vis = Math.max(o.asset.size, o.asset.height * 0.6) > minVis;
+        const extent = Math.max(o.asset.size, o.asset.height * 0.6);
+        const vis = extent > minVis;
         if (o.mesh.visible !== vis) o.mesh.visible = vis;
+        // shadows of props that are tiny at this zoom are invisible anyway: skip them in the shadow pass
+        const cast = o.castsShadow && extent > minShadow;
+        if (o.mesh.castShadow !== cast) o.mesh.castShadow = cast;
       }
       if (o.state === 'falling') {
         this.updateFall(o, dt);

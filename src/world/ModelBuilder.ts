@@ -15,6 +15,8 @@ export interface PartOpts {
 }
 
 const tmpColor = new THREE.Color();
+/** Round shapes get more segments for a smoother high-quality look; deliberate polygons (4/6 sides) stay as they are. */
+const hq = (n: number) => (n >= 8 ? Math.round(n * 1.7) : n);
 const tmpMat = new THREE.Matrix4();
 const tmpQuat = new THREE.Quaternion();
 const tmpEuler = new THREE.Euler();
@@ -103,14 +105,14 @@ export class ModelBuilder {
     return this.add(g, color, x, y, z, o);
   }
   cyl(rt: number, rb: number, h: number, color: THREE.ColorRepresentation, x = 0, y = 0, z = 0, seg = 10, o: PartOpts = {}) {
-    return this.add(new THREE.CylinderGeometry(rt, rb, h, seg, 1), color, x, y, z, o);
+    return this.add(new THREE.CylinderGeometry(rt, rb, h, hq(seg), 1), color, x, y, z, o);
   }
   /** Cylinder standing on y. */
   cylB(rt: number, rb: number, h: number, color: THREE.ColorRepresentation, x = 0, y = 0, z = 0, seg = 10, o: PartOpts = {}) {
     return this.cyl(rt, rb, h, color, x, y + h / 2, z, seg, o);
   }
   sphere(r: number, color: THREE.ColorRepresentation, x = 0, y = 0, z = 0, o: PartOpts & { w?: number; hs?: number } = {}) {
-    return this.add(new THREE.SphereGeometry(r, o.w ?? 10, o.hs ?? 7), color, x, y, z, o);
+    return this.add(new THREE.SphereGeometry(r, o.w ? Math.round(o.w * 1.6) : 18, o.hs ? Math.round(o.hs * 1.6) : 12), color, x, y, z, o);
   }
   ico(r: number, color: THREE.ColorRepresentation, x = 0, y = 0, z = 0, detail = 0, o: PartOpts = {}) {
     return this.add(new THREE.IcosahedronGeometry(r, detail), color, x, y, z, o);
@@ -119,15 +121,15 @@ export class ModelBuilder {
     return this.add(new THREE.DodecahedronGeometry(r, 0), color, x, y, z, o);
   }
   cone(r: number, h: number, color: THREE.ColorRepresentation, x = 0, y = 0, z = 0, seg = 10, o: PartOpts = {}) {
-    return this.add(new THREE.ConeGeometry(r, h, seg, 1), color, x, y, z, o);
+    return this.add(new THREE.ConeGeometry(r, h, hq(seg), 1), color, x, y, z, o);
   }
   torus(r: number, tube: number, color: THREE.ColorRepresentation, x = 0, y = 0, z = 0, o: PartOpts & { rs?: number; ts?: number; arc?: number } = {}) {
-    return this.add(new THREE.TorusGeometry(r, tube, o.rs ?? 6, o.ts ?? 14, o.arc ?? Math.PI * 2), color, x, y, z, o);
+    return this.add(new THREE.TorusGeometry(r, tube, o.rs ?? 8, hq(o.ts ?? 16), o.arc ?? Math.PI * 2), color, x, y, z, o);
   }
   /** Lathe from a 2D profile [radius, y] pairs. */
   lathe(profile: [number, number][], color: THREE.ColorRepresentation, x = 0, y = 0, z = 0, seg = 12, o: PartOpts = {}) {
     const pts = profile.map(([r, py]) => new THREE.Vector2(r, py));
-    return this.add(new THREE.LatheGeometry(pts, seg), color, x, y, z, o);
+    return this.add(new THREE.LatheGeometry(pts, hq(seg)), color, x, y, z, o);
   }
   /** Extruded 2D shape (points in XY), extruded along Z by depth, centred. */
   extrude(points: [number, number][], depth: number, color: THREE.ColorRepresentation, x = 0, y = 0, z = 0, o: PartOpts = {}) {

@@ -39,6 +39,7 @@ uniform float uTime;
 uniform vec3 uHoleTint;
 uniform float uPulse;
 uniform vec2 uMapSize;
+uniform vec2 uMapMin;
 uniform float uDetail;
 ${NOISE}
 `;
@@ -46,31 +47,38 @@ ${NOISE}
 const GROUND_MAP_FRAG = /* glsl */ `
 vec2 hRel = vWPos.xz - uHolePos;
 float hD = length(hRel);
-if (hD < uHoleR) discard;
+// anti-aliased rim: fractional coverage over ~1px instead of a hard discard edge
+float hPx = max(fwidth(hD), 1e-4);
+float hCov = clamp((hD - uHoleR) / hPx + 0.5, 0.0, 1.0);
+if (hCov <= 0.0) discard;
 float hBand = uHoleR * 0.85 + 0.3;
 float hT = clamp((hD - uHoleR) / hBand, 0.0, 1.0);
 float hInv = 1.0 - hT;
 vec2 hDir = hD > 1e-4 ? hRel / hD : vec2(0.0);
 #ifdef USE_MAP
-  float lens = hInv * hInv * (uHoleR * 0.32 + 0.04);
-  vec2 uvD = vMapUv + vec2(hDir.x, -hDir.y) * lens / uMapSize;
-  vec4 sampledDiffuseColor = texture2D( map, uvD );
+  // world-space mapping; a gentle gravitational lens pulls the ground towards the hole
+  float lens = hInv * hInv * hInv * (uHoleR * 0.16 + 0.02);
+  vec2 wp = vWPos.xz + hDir * lens;
+  vec2 uvW = vec2((wp.x - uMapMin.x) / uMapSize.x, 1.0 - (wp.y - uMapMin.y) / uMapSize.y);
+  vec4 sampledDiffuseColor = texture2D( map, uvW );
   diffuseColor *= sampledDiffuseColor;
 #endif
 float nA = vNoise(vWPos.xz * 2.7);
 float nB = vNoise(vWPos.xz * 0.35);
-diffuseColor.rgb *= 1.0 + ((nA - 0.5) * 0.07 + (nB - 0.5) * 0.08) * uDetail;
-float hAO = mix(0.28, 1.0, smoothstep(0.0, 1.0, hT));
+diffuseColor.rgb *= 1.0 + ((nA - 0.5) * 0.05 + (nB - 0.5) * 0.07) * uDetail;
+float hAO = mix(0.3, 1.0, smoothstep(0.0, 1.0, hT));
 diffuseColor.rgb *= hAO;
 float wl = 0.32 + uHoleR * 0.42;
 float ripple = sin((hD - uTime * (0.6 + uHoleR * 0.5)) * 6.2831 / wl);
-diffuseColor.rgb += uHoleTint * (pow(hInv, 4.0) * (0.22 + uPulse * 0.5) + max(ripple, 0.0) * hInv * hInv * 0.07);
+diffuseColor.rgb += uHoleTint * (pow(hInv, 4.0) * (0.2 + uPulse * 0.5) + max(ripple, 0.0) * hInv * hInv * 0.06);
+diffuseColor.a = hCov;
 `;
 
-function patchGround(mat: THREE.MeshStandardMaterial, mapSize: THREE.Vector2, detail = 1) {
+function patchGround(mat: THREE.MeshStandardMaterial, mapMin: THREE.Vector2, mapSize: THREE.Vector2, detail = 1) {
   mat.onBeforeCompile = (shader) => {
     Object.assign(shader.uniforms, holeUniforms, {
       uMapSize: { value: mapSize },
+      uMapMin: { value: mapMin },
       uDetail: { value: detail },
     });
     shader.vertexShader = shader.vertexShader
@@ -84,14 +92,15 @@ function patchGround(mat: THREE.MeshStandardMaterial, mapSize: THREE.Vector2, de
 }
 
 /** Ground material with the hole cut-out, lensing and ripples. */
-export function createGroundMaterial(map: THREE.Texture | null, mapSize: THREE.Vector2, color = '#ffffff') {
+export function createGroundMaterial(map: THREE.Texture | null, mapMin: THREE.Vector2, mapSize: THREE.Vector2, color = '#ffffff') {
   const mat = new THREE.MeshStandardMaterial({
     map: map ?? undefined,
     color,
     roughness: 0.92,
     metalness: 0.0,
+    alphaToCoverage: true,
   });
-  patchGround(mat, mapSize);
+  patchGround(mat, mapMin, mapSize);
   return mat;
 }
 
@@ -137,9 +146,8 @@ export function getPropMaterials(): PropMaterials {
   if (propMats) return propMats;
   const standard = new THREE.MeshStandardMaterial({
     vertexColors: true,
-    flatShading: true,
-    roughness: 0.72,
-    metalness: 0.06,
+    roughness: 0.7,
+    metalness: 0.04,
   });
   patchProp(standard, 'void-prop-std');
   const emissive = new THREE.MeshBasicMaterial({ vertexColors: true });
