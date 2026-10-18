@@ -3,12 +3,13 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "VOID: The Hungry World — a 3D hole-swallowing arcade game built with Three.js, TypeScript and Vite.",
+  "description": "VOID: The Hungry World \u2014 a 3D hole-swallowing arcade game built with Three.js, TypeScript and Vite.",
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "build:pages": "tsc --noEmit && vite build && rm -rf docs && cp -r dist docs && touch docs/.nojekyll"
   },
   "dependencies": {
     "@fontsource/sora": "^5.3.0",
