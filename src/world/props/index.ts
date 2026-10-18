@@ -8,4 +8,6 @@ import './propsIndustrial';
 import './propsBeach';
 import './propsNeon';
 import './propsSpecial';
+import './propsFair';
+import './propsAirport';
 export * from './types';

@@ -28,6 +28,16 @@ const LYD = [0, 2, 4, 6, 7, 9, 11];
 
 const _ = 0;
 const THEMES: Record<MusicTheme, ThemeSpec> = {
+  fair: {
+    bpm: 126, root: 48, scale: MAJ, prog: [0, 3, 4, 0], pad: 'triangle', padCut: 2400, lead: 'marimba',
+    leadPattern: [0, 2, 4, 5, 4, 2, 0, -1, 1, 3, 5, 4, 3, 1, 2, -1], bass: 'triangle',
+    bassPattern: [1, _, _, 2, _, _, 1, _, _, 2, _, _, 3, _, 2, _], kick: [0, 6, 12], snare: [4, 10], hat: [2, 8, 14], leadOct: 2, delay: 0.25,
+  },
+  sky: {
+    bpm: 116, root: 45, scale: LYD, prog: [0, 1, 4, 3], pad: 'sawtooth', padCut: 1900, lead: 'triangle',
+    leadPattern: [0, -1, 4, -1, 2, -1, 5, -1, 4, -1, 2, -1, 3, -1, 1, -1], bass: 'sawtooth',
+    bassPattern: [1, _, _, 1, _, _, 2, _, 1, _, _, 1, _, 3, _, _], kick: [0, 4, 8, 12], snare: [4, 12], hat: [2, 6, 10, 14], leadOct: 2, delay: 0.375,
+  },
   menu: {
     bpm: 80, root: 45, scale: MIN, prog: [0, 5, 2, 6], pad: 'sawtooth', padCut: 900, lead: 'triangle',
     leadPattern: [0, -1, -1, 2, -1, -1, 4, -1, -1, 3, -1, -1, 2, -1, 1, -1], bass: 'sine',

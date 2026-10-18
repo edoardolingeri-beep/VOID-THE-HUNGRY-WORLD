@@ -708,7 +708,8 @@ export class Session {
         }
         o.x = nx;
         o.z = nz;
-        o.rot = Math.PI / 2 - o.heading;
+        // models built facing +X (vehicles) vs +Z (robots)
+        o.rot = o.asset.hx > o.asset.hz * 1.2 ? -o.heading : Math.PI / 2 - o.heading;
         o.y = Math.abs(Math.sin(o.phase * 6)) * 0.04;
         break;
       }

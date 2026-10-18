@@ -73,7 +73,7 @@ completato gli obiettivi, quindi le stelle tengono conto sia del punteggio sia d
 Completare un livello sblocca il successivo; tutti i livelli già superati restano rigiocabili.
 Progressi, record, stelle, collezione e impostazioni sono salvati in `localStorage`.
 
-### I dieci livelli
+### I livelli
 
 | # | Nome | Ambientazione | Tempo | Obiettivo |
 | --- | --- | --- | --- | --- |
@@ -87,6 +87,13 @@ Progressi, record, stelle, collezione e impostazioni sono salvati in `localStora
 | 8 | Beach Absorption | Località balneare | 80 s | 40 oggetti + 10.000 punti |
 | 9 | Neon Metropolis | Città futuristica notturna | 90 s | 12.000 punti + 3 oggetti speciali |
 | 10 | The Final Consumption | Capitale con piazza e grattacieli | 120 s | 20.000 punti + 1 edificio importante |
+
+**Mondi bonus** (si sbloccano dopo aver completato il livello 10):
+
+| # | Nome | Ambientazione | Tempo | Obiettivo |
+| --- | --- | --- | --- | --- |
+| 11 | Fun Fair Frenzy | Luna park al tramonto | 90 s | 15.000 punti + 3 giostre |
+| 12 | Sky Harbor | Aeroporto internazionale | 100 s | 25.000 punti + 2 aerei |
 
 Nel livello 10, inghiottire la **Hungry Spire** al centro della piazza avvia la sequenza finale
 (rallentamento, onda di particelle, inquadratura orbitale) e la schermata di vittoria.
@@ -116,12 +123,12 @@ src/
                           increspature, oscuramento degli oggetti che cadono)
     ModelBuilder.ts       costruttore di modelli low-poly procedurali (geometria unita, 1 draw call)
     PropLibrary.ts        cache delle geometrie, dimensione minima, massa e colore di ogni oggetto
-    props/                catalogo di oltre 100 oggetti per tema (parco, strada, veicoli, negozi,
-                          downtown, edifici, industria, spiaggia, neon, speciali)
+    props/                catalogo di oltre 150 oggetti per tema (parco, strada, veicoli, negozi,
+                          downtown, edifici, industria, spiaggia, neon, luna park, aeroporto, speciali)
     GroundPainter.ts      pittura del terreno su canvas (strade, strisce, piastrelle, sabbia…)
     LevelContext.ts       API di costruzione dei livelli: spawn con spaziatura minima, zone,
                           file, cluster, scie, corsie del traffico, scenografia statica unita
-    levels/               definizione dei 10 livelli, temi cromatici e scenografie
+    levels/               definizione dei 12 livelli (10 + 2 bonus), temi cromatici e scenografie
   fx/Particles.ts         particelle in pool (spirale nel buco, esplosioni, scintille)
   audio/                  AudioManager (SFX sintetizzati) e Music (sequencer procedurale per tema)
   save/SaveManager.ts     salvataggi locali versionati
@@ -137,6 +144,10 @@ src/
   che scendono. Attorno al bordo il terreno è distorto come da una lente gravitazionale.
 - **Dimensioni**: ogni oggetto ha una taglia minima calcolata dalla sua geometria (ingombro e
   altezza); la crescita a taglie impedisce che il buco diventi enorme dopo pochi bocconi.
+- **Qualità grafica**: rendering fino a 2–2,5× la densità dello schermo con MSAA 4×, terreno
+  diviso in una texture ad alta risoluzione per l'area di gioco e una più leggera per i dintorni,
+  bordo del buco anti-aliasato, illuminazione ambientale (IBL), ombrezzatura morbida, ombre
+  stabili durante lo zoom.
 - **Prestazioni**: geometrie unite per prop (una draw call), scenografia unita a blocchi, pooling
   di oggetti, veicoli, particelle e numeri flottanti, animazioni e LOD solo per gli oggetti vicini,
   ombre che seguono la camera, tre preset di qualità (Bassa / Media / Alta) selezionati

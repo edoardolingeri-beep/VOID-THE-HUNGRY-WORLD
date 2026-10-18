@@ -1,5 +1,5 @@
 import { h, icon, starIcon, sfxButtons } from './dom';
-import { LEVELS } from '../world/levels';
+import { LEVELS, CAMPAIGN_LENGTH } from '../world/levels';
 import { saves, type Settings } from '../save/SaveManager';
 import { audio } from '../audio/AudioManager';
 import { icons } from './IconRenderer';
@@ -76,7 +76,7 @@ export function levelSelect(cb: { back(): void; play(id: number): void }) {
     heroImg.style.opacity = '0';
     heroImg.style.transition = 'opacity .4s';
     thumb.append(h('div', { class: 'num' }, String(def.id).padStart(2, '0')), heroImg);
-    const badge = rec.completed ? h('span', { class: 'pill gold badge' }, icon('check'), 'Cleared') : unlocked && !rec.plays ? h('span', { class: 'pill new badge' }, 'New') : null;
+    const badge = rec.completed ? h('span', { class: 'pill gold badge' }, icon('check'), 'Cleared') : unlocked && !rec.plays ? h('span', { class: 'pill new badge' }, 'New') : def.bonus ? h('span', { class: 'pill badge' }, icon('star'), 'Bonus') : null;
     if (badge) thumb.append(badge);
     if (!unlocked) thumb.append(h('div', { class: 'lock' }, icon('lock')));
     const diff = h('span', { class: 'diff', title: 'Difficulty' }, ...[1, 2, 3, 4, 5].map((k) => h('i', { class: k <= def.difficulty ? 'on' : '' })));
@@ -299,7 +299,7 @@ export function results(r: RunResult, newBest: boolean, hasNext: boolean, cb: { 
         'div',
         { class: 'panel glass' },
         h('div', { class: 'lname' }, `Level ${r.level.id} · ${r.level.name}`),
-        h('div', { class: `title ${win ? 'win' : 'lose'}` }, win ? (r.level.id === LEVELS.length ? 'WORLD CONSUMED' : 'LEVEL COMPLETED') : "TIME'S UP"),
+        h('div', { class: `title ${win ? 'win' : 'lose'}` }, win ? (r.level.id === CAMPAIGN_LENGTH ? 'WORLD CONSUMED' : 'LEVEL COMPLETED') : "TIME'S UP"),
         starsEl,
         newBest ? h('span', { class: 'pill gold newbest' }, icon('trophy'), 'New personal best') : null,
         grid,

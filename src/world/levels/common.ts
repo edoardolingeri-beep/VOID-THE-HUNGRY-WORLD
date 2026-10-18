@@ -54,6 +54,16 @@ export const THEMES = {
     hemiSky: '#ffe0c8', hemiGround: '#6a5a78', hemiIntensity: 1.15, exposure: 1.0,
     bloom: { strength: 0.26, radius: 0.35, threshold: 0.96 }, holeTint: '#ff3d9a', music: 'finale', accent: '#ffc94a', accent2: '#ff3d9a',
   },
+  fair: {
+    sky: '#ffb08f', fog: '#f2a698', sunColor: '#ffb27a', sunIntensity: 2.4, sunDir: [-0.9, 0.6, 0.35],
+    hemiSky: '#ffd0c2', hemiGround: '#5d4a7a', hemiIntensity: 1.2, exposure: 1.0,
+    bloom: { strength: 0.32, radius: 0.4, threshold: 0.95 }, holeTint: '#ff3d9a', music: 'fair', accent: '#ff3d6e', accent2: '#ffc94a',
+  },
+  sky: {
+    sky: '#b6dcff', fog: '#cfe6fb', sunColor: '#fff4e2', sunIntensity: 2.8, sunDir: [0.3, 1, 0.7],
+    hemiSky: '#e6f2ff', hemiGround: '#7f8a72', hemiIntensity: 1.25, exposure: 1.0,
+    bloom: { strength: 0.16, radius: 0.3, threshold: 1.0 }, holeTint: '#3d6bff', music: 'sky', accent: '#3db8ff', accent2: '#e9edf5',
+  },
 } satisfies Record<string, Theme>;
 
 export const C = {

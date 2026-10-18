@@ -12,7 +12,9 @@ export type PropTag =
   | 'building'
   | 'secret'
   | 'chain'
-  | 'nature';
+  | 'nature'
+  | 'ride'
+  | 'aircraft';
 
 export type SoundKind = 'soft' | 'wood' | 'metal' | 'glass' | 'heavy' | 'tech' | 'plastic' | 'organic';
 

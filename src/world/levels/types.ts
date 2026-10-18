@@ -2,7 +2,7 @@ import type { BloomSettings } from '../../engine/Engine';
 import type { PropTag } from '../props/types';
 import type { LevelContext } from '../LevelContext';
 
-export type MusicTheme = 'menu' | 'park' | 'street' | 'traffic' | 'shopping' | 'downtown' | 'industrial' | 'beach' | 'neon' | 'finale';
+export type MusicTheme = 'menu' | 'park' | 'street' | 'traffic' | 'shopping' | 'downtown' | 'industrial' | 'beach' | 'neon' | 'finale' | 'fair' | 'sky';
 
 export interface Objective {
   kind: 'count' | 'score' | 'tag';
@@ -58,6 +58,8 @@ export interface LevelDef {
   build: (ctx: LevelContext) => void;
   /** Prop id whose swallowing triggers the grand finale. */
   finaleProp?: string;
+  /** Bonus world unlocked after the main campaign. */
+  bonus?: boolean;
   /** Preferred hole start position. */
   start?: [number, number];
 }
